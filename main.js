@@ -4438,9 +4438,10 @@ var $elm$core$Basics$LT = {$: 'LT'};
 var $author$project$Main$init = {
 	streams: _List_fromArray(
 		[
-			{source: '5qap5aO4i9A'},
-			{source: 'Ggdm7oGNA5M'},
-			{source: '0FKuVh336Og'}
+			{source: '2tWkQbbmlwQ'},
+			{source: 'vfVo_YQBEQA'},
+			{source: 'qJdhYmWdXQQ'},
+			{source: '9Auq9mYxFEE'}
 		])
 };
 var $elm$core$Result$Err = function (a) {
@@ -5226,6 +5227,21 @@ var $author$project$Styles$activeSpaceBlockStyle = _Utils_ap(
 			A2($elm$html$Html$Attributes$style, 'background-color', '#162B32')
 		]));
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $author$project$Styles$outerBlockStyle = _Utils_ap(
+	$author$project$Styles$flexColumn,
+	_List_fromArray(
+		[
+			A2($elm$html$Html$Attributes$style, 'height', '100%')
+		]));
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$virtual_dom$VirtualDom$lazy = _VirtualDom_lazy;
 var $elm$html$Html$Lazy$lazy = $elm$virtual_dom$VirtualDom$lazy;
 var $elm$virtual_dom$VirtualDom$attribute = F2(
@@ -5237,19 +5253,11 @@ var $elm$virtual_dom$VirtualDom$attribute = F2(
 	});
 var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
 var $elm$html$Html$iframe = _VirtualDom_node('iframe');
-var $author$project$Components$CustomStream$mainIframeStyle = _List_fromArray(
+var $author$project$Components$CustomStream$iframeStyle = _List_fromArray(
 	[
 		A2($elm$html$Html$Attributes$style, 'width', '100%'),
 		A2($elm$html$Html$Attributes$style, 'height', '100%')
 	]);
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
 var $elm$html$Html$Attributes$src = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -5257,20 +5265,11 @@ var $elm$html$Html$Attributes$src = function (url) {
 		_VirtualDom_noJavaScriptOrHtmlUri(url));
 };
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
-var $author$project$Components$CustomStream$lazyIframe = function (_v0) {
-	var stream = _v0.a;
-	var isActive = _v0.b;
-	var iframeStyle = function () {
-		if (isActive) {
-			return $author$project$Components$CustomStream$mainIframeStyle;
-		} else {
-			return _List_Nil;
-		}
-	}();
+var $author$project$Components$CustomStream$makeIframe = function (stream) {
 	return A2(
 		$elm$html$Html$iframe,
 		_Utils_ap(
-			iframeStyle,
+			$author$project$Components$CustomStream$iframeStyle,
 			_List_fromArray(
 				[
 					$elm$html$Html$Attributes$src('https://www.youtube-nocookie.com/embed/' + stream.source),
@@ -5289,7 +5288,6 @@ var $author$project$Components$CustomStream$outlineBlockBaseStyle = _List_fromAr
 var $author$project$Models$ActivateStream = function (a) {
 	return {$: 'ActivateStream', a: a};
 };
-var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -5344,124 +5342,51 @@ var $author$project$Components$CustomStream$streamToolbar = function (stream) {
 					]))
 			]));
 };
-var $author$project$Components$CustomStream$width100 = _List_fromArray(
-	[
-		A2($elm$html$Html$Attributes$style, 'width', '100%')
-	]);
-var $author$project$Components$CustomStream$customStream = F2(
-	function (stream, isActive) {
-		var outlineBlockStyle = function () {
-			if (isActive) {
-				return _Utils_ap($author$project$Components$CustomStream$outlineBlockBaseStyle, $author$project$Components$CustomStream$width100);
-			} else {
-				return $author$project$Components$CustomStream$outlineBlockBaseStyle;
-			}
-		}();
-		return A2(
-			$elm$html$Html$div,
-			outlineBlockStyle,
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$Lazy$lazy,
-					$author$project$Components$CustomStream$lazyIframe,
-					_Utils_Tuple2(stream, isActive)),
-					$author$project$Components$CustomStream$streamToolbar(stream)
-				]));
-	});
-var $author$project$Main$drawTheRestOfStreams = function (streams) {
+var $author$project$Components$CustomStream$testCustomStream = function (stream) {
 	return A2(
-		$elm$core$List$map,
-		function (a) {
-			return A2($author$project$Components$CustomStream$customStream, a, false);
-		},
-		streams);
+		$elm$html$Html$div,
+		$author$project$Components$CustomStream$outlineBlockBaseStyle,
+		_List_fromArray(
+			[
+				$author$project$Components$CustomStream$makeIframe(stream),
+				$author$project$Components$CustomStream$streamToolbar(stream)
+			]));
 };
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
+var $author$project$Components$CustomStream$keyedCustomStream = function (stream) {
+	return _Utils_Tuple2(
+		stream.source,
+		A2($elm$html$Html$Lazy$lazy, $author$project$Components$CustomStream$testCustomStream, stream));
 };
-var $author$project$Styles$mainStreamStyle = _Utils_ap(
-	$author$project$Styles$flex,
+var $elm$virtual_dom$VirtualDom$keyedNode = function (tag) {
+	return _VirtualDom_keyedNode(
+		_VirtualDom_noScript(tag));
+};
+var $elm$html$Html$Keyed$node = $elm$virtual_dom$VirtualDom$keyedNode;
+var $author$project$Styles$testBlockStyle = _Utils_ap(
+	$author$project$Styles$flexColumn,
 	_List_fromArray(
 		[
+			A2($elm$html$Html$Attributes$style, 'flex-wrap', 'wrap'),
 			A2($elm$html$Html$Attributes$style, 'width', '100%'),
-			A2($elm$html$Html$Attributes$style, 'flex-grow', '1')
+			A2($elm$html$Html$Attributes$style, 'height', '100%')
 		]));
-var $elm$core$List$tail = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(xs);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
+var $author$project$Main$testVideoView = function (streams) {
+	return A3(
+		$elm$html$Html$Keyed$node,
+		'div',
+		_Utils_ap(
+			$author$project$Styles$testBlockStyle,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('special-style')
+				])),
+		A2($elm$core$List$map, $author$project$Components$CustomStream$keyedCustomStream, streams));
 };
 var $author$project$Styles$flexRow = _Utils_ap(
 	$author$project$Styles$flex,
 	_List_fromArray(
 		[
 			A2($elm$html$Html$Attributes$style, 'flex-direction', 'row')
-		]));
-var $author$project$Styles$unfocusedBlockStyle = _Utils_ap(
-	$author$project$Styles$flexRow,
-	_List_fromArray(
-		[
-			A2($elm$html$Html$Attributes$style, 'flex-wrap', 'wrap')
-		]));
-var $author$project$Main$focusedVideoView = function (streams) {
-	var _v0 = _Utils_Tuple2(
-		$elm$core$List$head(streams),
-		$elm$core$List$tail(streams));
-	if (_v0.a.$ === 'Just') {
-		if (_v0.b.$ === 'Nothing') {
-			var head = _v0.a.a;
-			var _v1 = _v0.b;
-			return _List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					$author$project$Styles$mainStreamStyle,
-					_List_fromArray(
-						[
-							A2($author$project$Components$CustomStream$customStream, head, true)
-						]))
-				]);
-		} else {
-			var head = _v0.a.a;
-			var rest = _v0.b.a;
-			return _List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					$author$project$Styles$mainStreamStyle,
-					_List_fromArray(
-						[
-							A2($author$project$Components$CustomStream$customStream, head, true)
-						])),
-					A2(
-					$elm$html$Html$div,
-					$author$project$Styles$unfocusedBlockStyle,
-					$author$project$Main$drawTheRestOfStreams(rest))
-				]);
-		}
-	} else {
-		return _List_fromArray(
-			[
-				A2($elm$html$Html$div, _List_Nil, _List_Nil)
-			]);
-	}
-};
-var $author$project$Styles$outerBlockStyle = _Utils_ap(
-	$author$project$Styles$flexColumn,
-	_List_fromArray(
-		[
-			A2($elm$html$Html$Attributes$style, 'height', '100%')
 		]));
 var $author$project$Styles$toolbarBlockStyle = _Utils_ap(
 	$author$project$Styles$flexRow,
@@ -5481,7 +5406,10 @@ var $author$project$Main$view = function (model) {
 				A2(
 				$elm$html$Html$div,
 				$author$project$Styles$activeSpaceBlockStyle,
-				$author$project$Main$focusedVideoView(model.streams))
+				_List_fromArray(
+					[
+						$author$project$Main$testVideoView(model.streams)
+					]))
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$sandbox(

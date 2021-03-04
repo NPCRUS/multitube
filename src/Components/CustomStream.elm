@@ -8,38 +8,43 @@ import Html.Lazy exposing (lazy)
 import Models exposing (Msg(..), StreamSource)
 import Styles exposing (flex)
 
-customStream: StreamSource -> Bool -> Html Msg
-customStream stream isActive =
+keyedCustomStream: StreamSource -> (String, Html Msg)
+keyedCustomStream stream =
+    (stream.source, lazy testCustomStream stream)
+
+testCustomStream: StreamSource -> Html Msg
+testCustomStream stream =
+    div outlineBlockBaseStyle
+            [ makeIframe stream
+             , streamToolbar stream ]
+
+customStream: (StreamSource, Bool) -> Html Msg
+customStream (stream, isActive) =
     let
         outlineBlockStyle = case isActive of
             True -> outlineBlockBaseStyle ++ width100
             False -> outlineBlockBaseStyle
     in
         div outlineBlockStyle
-        [ lazy lazyIframe (stream, isActive)
+        [ makeIframe stream
          , streamToolbar stream ]
 
-lazyIframe: (StreamSource, Bool) -> Html Msg
-lazyIframe (stream, isActive) =
-    let
-        iframeStyle = case isActive of
-            True -> mainIframeStyle
-            False -> []
-    in
-        Html.iframe
-          (iframeStyle ++ [ src ("https://www.youtube-nocookie.com/embed/" ++ stream.source)
-          , HtmlA.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-          , HtmlA.type_ "text/html"
-          , HtmlA.attribute "allowfullscreen" "true"
-          , HtmlA.attribute "frameborder" "0"]) []
+makeIframe: StreamSource -> Html Msg
+makeIframe stream =
+    Html.iframe
+      (iframeStyle ++ [ src ("https://www.youtube-nocookie.com/embed/" ++ stream.source)
+      , HtmlA.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+      , HtmlA.type_ "text/html"
+      , HtmlA.attribute "allowfullscreen" "true"
+      , HtmlA.attribute "frameborder" "0"]) []
 
 streamToolbar: StreamSource -> Html Msg
 streamToolbar stream =
     div streamToolbarStyle
     [ span (toolbarIconStyle ++ [ class "material-icons", onClick (ActivateStream stream) ]) [text "zoom_in"] ]
 
-mainIframeStyle: List (Attribute msg)
-mainIframeStyle =
+iframeStyle: List (Attribute msg)
+iframeStyle =
     [ style "width" "100%"
     , style "height" "100%"]
 

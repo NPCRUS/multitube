@@ -6,6 +6,15 @@
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
               rel="stylesheet">
     </head>
+    <style>
+        .special-style div:first-child {
+            height: 100%;
+            width: calc(80%);
+        }
+        .special-style div:not(:first-child) {
+            width: calc(20%);
+        }
+    </style>
     <body style="margin: 0; height: 100%;">
         <div id="myapp"></div>
         <script>

@@ -39,3 +39,9 @@ mainStreamStyle =
 unfocusedBlockStyle: List (Attribute msg)
 unfocusedBlockStyle =
     flexRow ++ [ style "flex-wrap" "wrap"]
+
+testBlockStyle: List (Attribute msg)
+testBlockStyle =
+    flexColumn ++ [ style "flex-wrap" "wrap"
+    , style "width" "100%"
+    , style "height" "100%"]

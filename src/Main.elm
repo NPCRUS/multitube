@@ -1,8 +1,11 @@
 module Main exposing (main)
 
 import Browser
-import Components.CustomStream exposing (customStream)
+import Components.CustomStream exposing (customStream, keyedCustomStream)
 import Html exposing (..)
+import Html.Attributes exposing (class)
+import Html.Keyed as Keyed
+import Html.Lazy exposing (lazy)
 import Models exposing (Msg(..), StreamSource)
 import Styles exposing (..)
 
@@ -12,7 +15,7 @@ main =
 type alias Model = { streams: List StreamSource }
 
 init : Model
-init = { streams = [ { source = "5qap5aO4i9A" }, { source = "Ggdm7oGNA5M" }, { source = "0FKuVh336Og" } ] }
+init = { streams = [ { source = "2tWkQbbmlwQ" }, { source = "vfVo_YQBEQA" }, { source = "qJdhYmWdXQQ" }, { source = "9Auq9mYxFEE" } ] }
 
 update : Msg -> Model -> Model
 update msg model =
@@ -28,20 +31,12 @@ activateStream model stream =
     in
         { model | streams = newList }
 
-focusedVideoView: (List StreamSource) -> List (Html Msg)
-focusedVideoView streams =
-    case (List.head streams, List.tail streams) of
-        (Just head, Nothing) -> [ div mainStreamStyle [customStream head True]]
-        (Just head, Just rest) -> [ div mainStreamStyle [customStream head True]
-                                    , div unfocusedBlockStyle (drawTheRestOfStreams rest)]
-        (_, _) -> [ div [][]]
-
-drawTheRestOfStreams: (List StreamSource) -> List (Html Msg)
-drawTheRestOfStreams streams =
-    List.map (\a -> (customStream a False)) streams
+testVideoView: (List StreamSource) -> (Html Msg)
+testVideoView streams =
+    Keyed.node "div" (testBlockStyle ++ [ class "special-style"]) (List.map keyedCustomStream streams)
 
 view: Model -> Html Msg
 view model =
     div outerBlockStyle [ div toolbarBlockStyle []
-        , div activeSpaceBlockStyle (focusedVideoView model.streams)
+        , div activeSpaceBlockStyle [testVideoView model.streams]
     ]
