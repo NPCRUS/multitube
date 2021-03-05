@@ -23,7 +23,8 @@ toolbarBlockStyle: List (Attribute msg)
 toolbarBlockStyle =
     flexRow ++ [ style "width" "100%"
     , style "background-color" "#FF4838"
-    , style "height" "40px"]
+    , style "height" "40px"
+    , style "align-items" "center"]
 
 activeSpaceBlockStyle: List (Attribute msg)
 activeSpaceBlockStyle =
@@ -31,17 +32,14 @@ activeSpaceBlockStyle =
     , style "width" "100%"
     , style "background-color" "#162B32"]
 
-mainStreamStyle: List (Attribute msg)
-mainStreamStyle =
-    flex ++ [ style "width" "100%"
-    , style "flex-grow" "1"]
-
-unfocusedBlockStyle: List (Attribute msg)
-unfocusedBlockStyle =
-    flexRow ++ [ style "flex-wrap" "wrap"]
-
 testBlockStyle: List (Attribute msg)
 testBlockStyle =
     flexColumn ++ [ style "flex-wrap" "wrap"
     , style "width" "100%"
     , style "height" "100%"]
+
+toolbarIconStyle: List (Attribute msg)
+toolbarIconStyle =
+    [ style "color" "rgba(255, 255, 255, 1)"
+    , style "font-size" "30px"
+    , style "cursor" "pointer"]
