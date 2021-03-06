@@ -4,3 +4,6 @@ elm-stuff
 repl-temp-*
 .idea
 node_modules
+build
+index.html
+main.js
