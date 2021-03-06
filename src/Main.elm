@@ -2,34 +2,38 @@ module Main exposing (main)
 
 import Browser
 import Components.CustomStream exposing (keyedStreamBlock)
+import Components.InfoModal exposing (infoModal)
 import Components.StreamAddModal exposing (streamAddModal)
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Html.Keyed as Keyed
 import Maybe exposing (andThen)
-import Models exposing (Msg(..), StreamAddModal, StreamSource)
+import Models exposing (InfoModal, Msg(..), StreamAddModal, StreamSource)
 import Regex
 import Styles exposing (..)
 
 main =
     Browser.sandbox { init = init, update = update, view = view }
 
-type alias Model = { streams: List StreamSource, modal: StreamAddModal }
+type alias Model = { streams: List StreamSource, streamAddModal: StreamAddModal, infoModal: InfoModal }
 
 init : Model
-init = { streams = [ { source = "IDfhf7esxZE" }, { source = "_SBFZxzs2h0" } ]
-        , modal = { isOpened = False, inputText = "" } }
+init = { streams = [ { source = "5qap5aO4i9A" }, { source = "9Auq9mYxFEE" } ]
+        , streamAddModal = { isOpened = False, inputText = "" }
+        , infoModal = { isOpened = False } }
 
 update : Msg -> Model -> Model
 update msg model =
     case msg of
         ActivateStream stream -> activateStream model stream
         DeleteStream stream -> deleteStream model stream
-        OpenAddStreamModal -> { model | modal = (updateModalIsOpened True model.modal ) }
-        CloseAddStreamModal -> { model | modal = (updateModalIsOpened False model.modal ) }
-        ChangeAddStreamModalText inputText -> { model | modal = (updateModalInputText inputText model.modal )}
+        OpenAddStreamModal -> { model | streamAddModal = (updateStreamModalIsOpened True model.streamAddModal ) }
+        CloseAddStreamModal -> { model | streamAddModal = (updateStreamModalIsOpened False model.streamAddModal ) }
+        ChangeAddStreamModalText inputText -> { model | streamAddModal = (updateModalInputText inputText model.streamAddModal )}
         ConfirmStreamAdd -> addStream model
+        OpenInfoModal -> { model | infoModal = (updateInfoModalIsOpened True model.infoModal)}
+        CloseInfoModal -> { model | infoModal = (updateInfoModalIsOpened False model.infoModal)}
 
 testRegex: Regex.Regex
 testRegex =
@@ -39,14 +43,14 @@ testRegex =
 addStream: Model -> Model
 addStream model =
     let
-        matchMaybe = (Regex.find testRegex model.modal.inputText)
+        matchMaybe = (Regex.find testRegex model.streamAddModal.inputText)
             |> List.head
             |> Maybe.map .submatches
             |> andThen List.head
         matchString = case matchMaybe of
-            Nothing -> model.modal.inputText
+            Nothing -> model.streamAddModal.inputText
             Just m -> case (m) of
-                Nothing -> model.modal.inputText
+                Nothing -> model.streamAddModal.inputText
                 Just token -> token
     in
         updateModelAndAddStream matchString model
@@ -54,10 +58,14 @@ addStream model =
 updateModelAndAddStream: String -> Model -> Model
 updateModelAndAddStream source model =
     { model | streams = (model.streams ++ [{ source = source }])
-        , modal = model.modal |> updateModalIsOpened False |> updateModalInputText "" }
+        , streamAddModal = model.streamAddModal |> updateStreamModalIsOpened False |> updateModalInputText "" }
 
-updateModalIsOpened: Bool -> StreamAddModal -> StreamAddModal
-updateModalIsOpened isOpened modal  =
+updateStreamModalIsOpened: Bool -> StreamAddModal -> StreamAddModal
+updateStreamModalIsOpened isOpened modal =
+    { modal | isOpened = isOpened }
+
+updateInfoModalIsOpened: Bool -> InfoModal -> InfoModal
+updateInfoModalIsOpened isOpened modal =
     { modal | isOpened = isOpened }
 
 updateModalInputText: String -> StreamAddModal -> StreamAddModal
@@ -86,16 +94,22 @@ streamList streams =
 
 toolbarBlock: Html Msg
 toolbarBlock =
-    div toolbarBlockStyle [ span (toolbarIconStyle ++ [ class "material-icons", onClick OpenAddStreamModal ]) [text "add_box"] ]
+    div toolbarBlockStyle
+        [ span (toolbarIconStyle ++ [ class "material-icons", onClick OpenAddStreamModal ]) [text "add"]
+        , span (toolbarIconStyle ++ [ class "material-icons", onClick OpenInfoModal]) [text "help_outline"] ]
 
 view: Model -> Html Msg
 view model =
     let
-        modal = case model.modal.isOpened of
-            True -> streamAddModal model.modal
+        addStreamModal = case model.streamAddModal.isOpened of
+            True -> streamAddModal model.streamAddModal
+            False -> div [][]
+        infoModal_ = case model.infoModal.isOpened of
+            True -> infoModal
             False -> div [][]
     in
         div outerBlockStyle [ toolbarBlock
             , div activeSpaceBlockStyle [streamList model.streams]
-            , modal
+            , addStreamModal
+            , infoModal_
         ]
