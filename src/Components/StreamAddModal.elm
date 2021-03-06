@@ -17,7 +17,7 @@ streamAddModal modal =
 modalHeader: Html Msg
 modalHeader =
     div (flexRow ++ width100 ++ [ style "justify-content" "flex-end"])
-    [ span (toolbarIconStyle ++ [ class "material-icons", onClick CloseAddStreamModal ]) [text "cancel"] ]
+    [ span (toolbarIconStyle ++ [ class "material-icons", onClick CloseAddStreamModal ]) [text "clear"] ]
 
 modalBody: String -> Html Msg
 modalBody inputText =

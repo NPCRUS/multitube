@@ -31,7 +31,7 @@ streamToolbar: StreamSource -> Html Msg
 streamToolbar stream =
     div streamToolbarStyle
     [ span (toolbarIconStyle ++ [ class "material-icons", onClick (ActivateStream stream) ]) [text "zoom_in"]
-    , span (toolbarIconStyle ++ [ class "material-icons", onClick (DeleteStream stream)]) [text "cancel"]]
+    , span (toolbarIconStyle ++ [ class "material-icons", onClick (DeleteStream stream)]) [text "clear"]]
 
 iframeStyle: List (Attribute msg)
 iframeStyle =

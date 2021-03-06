@@ -7,7 +7,9 @@ import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Html.Keyed as Keyed
+import Maybe exposing (andThen)
 import Models exposing (Msg(..), StreamAddModal, StreamSource)
+import Regex
 import Styles exposing (..)
 
 main =
@@ -29,10 +31,30 @@ update msg model =
         ChangeAddStreamModalText inputText -> { model | modal = (updateModalInputText inputText model.modal )}
         ConfirmStreamAdd -> addStream model
 
+testRegex: Regex.Regex
+testRegex =
+    Maybe.withDefault Regex.never <|
+        Regex.fromString "\\?v=(\\w*)\\&?"
+
 addStream: Model -> Model
 addStream model =
-    { model | streams = (model.streams ++ [{ source = model.modal.inputText }])
-    , modal = model.modal |> updateModalIsOpened False |> updateModalInputText "" }
+    let
+        matchMaybe = (Regex.find testRegex model.modal.inputText)
+            |> List.head
+            |> Maybe.map .submatches
+            |> andThen List.head
+        matchString = case matchMaybe of
+            Nothing -> model.modal.inputText
+            Just m -> case (m) of
+                Nothing -> model.modal.inputText
+                Just token -> token
+    in
+        updateModelAndAddStream matchString model
+
+updateModelAndAddStream: String -> Model -> Model
+updateModelAndAddStream source model =
+    { model | streams = (model.streams ++ [{ source = source }])
+        , modal = model.modal |> updateModalIsOpened False |> updateModalInputText "" }
 
 updateModalIsOpened: Bool -> StreamAddModal -> StreamAddModal
 updateModalIsOpened isOpened modal  =
