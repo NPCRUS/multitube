@@ -2,6 +2,7 @@ module Styles exposing (..)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (style)
+import Models exposing (StreamDisplayMode(..))
 
 flex: List (Attribute msg)
 flex =
@@ -24,7 +25,8 @@ toolbarBlockStyle =
     flexRow ++ [ style "width" "100%"
     , style "background-color" "#FF4838"
     , style "height" "40px"
-    , style "align-items" "center"]
+    , style "align-items" "center"
+    , style "justify-content" "space-between"]
 
 activeSpaceBlockStyle: List (Attribute msg)
 activeSpaceBlockStyle =
@@ -32,11 +34,14 @@ activeSpaceBlockStyle =
     , style "width" "100%"
     , style "background-color" "#162B32"]
 
-streamListBlockStyle: List (Attribute msg)
-streamListBlockStyle =
-    flexColumn ++ [ style "flex-wrap" "wrap"
-    , style "width" "100%"
-    , style "height" "100%"]
+streamListBlockStyle: StreamDisplayMode ->  List (Attribute msg)
+streamListBlockStyle streamDisplayMode =
+    let
+        baseStyle = if(streamDisplayMode == Focused) then flexColumn else flexRow
+    in
+        baseStyle ++ [ style "flex-wrap" "wrap"
+        , style "width" "100%"
+        , style "height" "100%"]
 
 toolbarIconStyle: List (Attribute msg)
 toolbarIconStyle =

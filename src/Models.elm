@@ -21,3 +21,4 @@ type Msg = ActivateStream StreamSource
     | ConfirmStreamAdd
     | OpenInfoModal
     | CloseInfoModal
+    | ChangeDisplayMode StreamDisplayMode

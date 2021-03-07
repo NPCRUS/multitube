@@ -35,6 +35,7 @@ update msg model =
         ConfirmStreamAdd -> addStream model
         OpenInfoModal -> { model | infoModal = (updateInfoModalIsOpened True model.infoModal)}
         CloseInfoModal -> { model | infoModal = (updateInfoModalIsOpened False model.infoModal)}
+        ChangeDisplayMode displayMode -> { model | displayMode = displayMode }
 
 testRegex: Regex.Regex
 testRegex =
@@ -91,7 +92,9 @@ deleteStream model stream =
 
 buildStreamList: StreamDisplayMode -> (List StreamSource) -> (Html Msg)
 buildStreamList displayMode streams =
-    Keyed.node "div" streamListBlockStyle (List.indexedMap (buildFocusedStreamBlock displayMode) streams)
+    Keyed.node "div"
+        (streamListBlockStyle displayMode)
+        (List.indexedMap (buildFocusedStreamBlock displayMode) streams)
 
 buildFocusedStreamBlock: StreamDisplayMode -> Int -> StreamSource -> (String, Html Msg)
 buildFocusedStreamBlock displayMode order stream = keyedStreamBlock (buildStreamDisplayParams displayMode order ) stream
@@ -99,8 +102,16 @@ buildFocusedStreamBlock displayMode order stream = keyedStreamBlock (buildStream
 toolbarBlock: Html Msg
 toolbarBlock =
     div toolbarBlockStyle
-        [ span (toolbarIconStyle ++ [ class "material-icons", onClick OpenAddStreamModal ]) [text "add"]
-        , span (toolbarIconStyle ++ [ class "material-icons", onClick OpenInfoModal]) [text "help_outline"] ]
+        [ div []
+            [
+                span (toolbarIconStyle ++ [ class "material-icons", onClick OpenAddStreamModal ]) [text "add"]
+                , span (toolbarIconStyle ++ [ class "material-icons", onClick (ChangeDisplayMode Balanced) ]) [text "view_module"]
+                , span (toolbarIconStyle ++ [ class "material-icons", onClick (ChangeDisplayMode Focused) ]) [text "view_sidebar"]
+            ]
+        , div []
+            [
+                span (toolbarIconStyle ++ [ class "material-icons", onClick OpenInfoModal]) [text "help_outline"] ]
+            ]
 
 view: Model -> Html Msg
 view model =
