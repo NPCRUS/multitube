@@ -32,8 +32,8 @@ activeSpaceBlockStyle =
     , style "width" "100%"
     , style "background-color" "#162B32"]
 
-testBlockStyle: List (Attribute msg)
-testBlockStyle =
+streamListBlockStyle: List (Attribute msg)
+streamListBlockStyle =
     flexColumn ++ [ style "flex-wrap" "wrap"
     , style "width" "100%"
     , style "height" "100%"]

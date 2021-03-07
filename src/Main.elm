@@ -9,19 +9,20 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Html.Keyed as Keyed
 import Maybe exposing (andThen)
-import Models exposing (InfoModal, Msg(..), StreamAddModal, StreamSource)
+import Models exposing (InfoModal, Msg(..), StreamAddModal, StreamDisplayMode(..), StreamSource, buildStreamDisplayParams)
 import Regex
 import Styles exposing (..)
 
 main =
     Browser.sandbox { init = init, update = update, view = view }
 
-type alias Model = { streams: List StreamSource, streamAddModal: StreamAddModal, infoModal: InfoModal }
+type alias Model = { streams: List StreamSource, streamAddModal: StreamAddModal, infoModal: InfoModal, displayMode: StreamDisplayMode }
 
 init : Model
 init = { streams = [ { source = "5qap5aO4i9A" }, { source = "9Auq9mYxFEE" } ]
         , streamAddModal = { isOpened = False, inputText = "" }
-        , infoModal = { isOpened = False } }
+        , infoModal = { isOpened = False }
+        , displayMode = Focused }
 
 update : Msg -> Model -> Model
 update msg model =
@@ -88,9 +89,12 @@ deleteStream model stream =
     in
         { model | streams = newList }
 
-streamList: (List StreamSource) -> (Html Msg)
-streamList streams =
-    Keyed.node "div" (testBlockStyle ++ [ class "special-style"]) (List.map keyedStreamBlock streams)
+buildStreamList: StreamDisplayMode -> (List StreamSource) -> (Html Msg)
+buildStreamList displayMode streams =
+    Keyed.node "div" streamListBlockStyle (List.indexedMap (buildFocusedStreamBlock displayMode) streams)
+
+buildFocusedStreamBlock: StreamDisplayMode -> Int -> StreamSource -> (String, Html Msg)
+buildFocusedStreamBlock displayMode order stream = keyedStreamBlock (buildStreamDisplayParams displayMode order ) stream
 
 toolbarBlock: Html Msg
 toolbarBlock =
@@ -109,7 +113,7 @@ view model =
             False -> div [][]
     in
         div outerBlockStyle [ toolbarBlock
-            , div activeSpaceBlockStyle [streamList model.streams]
+            , div activeSpaceBlockStyle [buildStreamList model.displayMode model.streams]
             , addStreamModal
             , infoModal_
         ]

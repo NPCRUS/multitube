@@ -5,18 +5,25 @@ import Html.Attributes exposing (..)
 import Html.Attributes as HtmlA
 import Html.Events exposing (onClick)
 import Html.Lazy exposing (lazy)
-import Models exposing (Msg(..), StreamSource)
+import Models exposing (Msg(..), StreamDisplayMode(..), StreamDisplayParams, StreamSource)
 import Styles exposing (flexColumn, toolbarIconStyle)
 
-keyedStreamBlock: StreamSource -> (String, Html Msg)
-keyedStreamBlock stream =
-    (stream.source, lazy streamBlock stream)
+keyedStreamBlock: StreamDisplayParams -> StreamSource -> (String, Html Msg)
+keyedStreamBlock displayParams stream =
+    (stream.source, lazy streamBlock (displayParams, stream))
 
-streamBlock: StreamSource -> Html Msg
-streamBlock stream =
-    div outlineBlockBaseStyle
+streamBlock: (StreamDisplayParams, StreamSource) -> Html Msg
+streamBlock (displayParams, stream) =
+    div (outlineBlockBaseStyle ++ streamBlockStyle displayParams )
             [ makeIframe stream
              , streamToolbar stream ]
+
+streamBlockStyle: StreamDisplayParams -> List (Attribute msg)
+streamBlockStyle displayParams =
+    case (displayParams.mode, displayParams.order) of
+        (Focused, 0) -> [ style "height" "100%", style "width" "calc(81.5%)"]
+        (Focused, _) -> [ style "height" "calc(22%)", style "width" "calc(18.5%)"]
+        (Balanced, _) -> [ style "height" "50%", style "width" "50%"]
 
 makeIframe: StreamSource -> Html Msg
 makeIframe stream =
