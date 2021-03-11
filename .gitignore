@@ -7,3 +7,4 @@ node_modules
 build
 index.html
 main.js
+main.min.js
