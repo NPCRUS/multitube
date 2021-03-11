@@ -5,7 +5,7 @@ import Components.CustomStream exposing (keyedStreamBlock)
 import Components.InfoModal exposing (infoModal)
 import Components.StreamAddModal exposing (streamAddModal)
 import Html exposing (..)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, style, title)
 import Html.Events exposing (onClick)
 import Html.Keyed as Keyed
 import Maybe exposing (andThen)
@@ -19,7 +19,7 @@ main =
 type alias Model = { streams: List StreamSource, streamAddModal: StreamAddModal, infoModal: InfoModal, displayMode: StreamDisplayMode }
 
 init : Model
-init = { streams = [ { source = "5qap5aO4i9A" }, { source = "9Auq9mYxFEE" } ]
+init = { streams = [ ]
         , streamAddModal = { isOpened = False, inputText = "" }
         , infoModal = { isOpened = False }
         , displayMode = Focused }
@@ -92,9 +92,12 @@ deleteStream model stream =
 
 buildStreamList: StreamDisplayMode -> (List StreamSource) -> (Html Msg)
 buildStreamList displayMode streams =
-    Keyed.node "div"
-        (streamListBlockStyle displayMode)
-        (List.indexedMap (buildFocusedStreamBlock displayMode) streams)
+    if (List.length streams > 0) then
+        Keyed.node "div"
+            (streamListBlockStyle displayMode)
+            (List.indexedMap (buildFocusedStreamBlock displayMode) streams)
+    else
+        button (addStreamButtonStyle ++ [ onClick OpenAddStreamModal ]) [ text "Add your first stream"]
 
 buildFocusedStreamBlock: StreamDisplayMode -> Int -> StreamSource -> (String, Html Msg)
 buildFocusedStreamBlock displayMode order stream = keyedStreamBlock (buildStreamDisplayParams displayMode order ) stream
@@ -102,15 +105,15 @@ buildFocusedStreamBlock displayMode order stream = keyedStreamBlock (buildStream
 toolbarBlock: Html Msg
 toolbarBlock =
     div toolbarBlockStyle
-        [ div []
+        [ div toolbarLeftBlockStyle
             [
-                span (toolbarIconStyle ++ [ class "material-icons", onClick OpenAddStreamModal ]) [text "add"]
-                , span (toolbarIconStyle ++ [ class "material-icons", onClick (ChangeDisplayMode Balanced) ]) [text "view_module"]
-                , span (toolbarIconStyle ++ [ class "material-icons", onClick (ChangeDisplayMode Focused) ]) [text "view_sidebar"]
+                span (toolbarIconStyle ++ [ title "add new stream to the list", style "margin-right" "2px", class "material-icons", onClick OpenAddStreamModal ]) [text "add"]
+                , span (toolbarIconStyle ++ [ title "switch to focused view", style "margin-right" "2px", class "material-icons", onClick (ChangeDisplayMode Focused) ]) [text "view_sidebar"]
+                , span (toolbarIconStyle ++ [ title "switch to balanced view", style "margin-right" "2px", class "material-icons", onClick (ChangeDisplayMode Balanced) ]) [text "view_module"]
             ]
         , div []
             [
-                span (toolbarIconStyle ++ [ class "material-icons", onClick OpenInfoModal]) [text "help_outline"] ]
+                span (toolbarIconStyle ++ [ title "info about website", class "material-icons", onClick OpenInfoModal]) [text "help_outline"] ]
             ]
 
 view: Model -> Html Msg
@@ -122,9 +125,10 @@ view model =
         infoModal_ = case model.infoModal.isOpened of
             True -> infoModal
             False -> div [][]
+        activeBlockStyle = if(List.length model.streams) > 0 then activeSpaceBlockStyle else activeSpaceBlockStyle ++ justifyContentCenter
     in
         div outerBlockStyle [ toolbarBlock
-            , div activeSpaceBlockStyle [buildStreamList model.displayMode model.streams]
+            , div activeBlockStyle [buildStreamList model.displayMode model.streams]
             , addStreamModal
             , infoModal_
         ]

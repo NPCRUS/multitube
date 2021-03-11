@@ -36,8 +36,8 @@ githubLink =
 
 explanationText: String
 explanationText = "Originally this website was made for watching multiple WTT(World Table Tennis) streams in parallel. " ++
-    "Additionally, I wanted to be able to quickly focus on one of the matches and have the rest running somewhere on background, " ++
-    "so I can always see if pair of opponents has changed there and change my focis again. " ++
+    "Additionally, I wanted to be able to quickly focus on one of the games and have the rest running somewhere on background, " ++
+    "so I can always see if pair of opponents has changed there and change my focus again. " ++
     "Please provide any bug reports, ideas or suggestions on github. Enjoy!"
 
 modalStyle: List (Attribute msg)
