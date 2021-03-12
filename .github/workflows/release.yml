@@ -30,6 +30,6 @@ jobs:
         run: |
           mkdir -p ./build
           cp -a ./assets/. ./build/
-          elm make --optimize --output=./build/premain.js
+          elm make --optimize --output=./build/premain.js src/Main.elm
           ./node_modules/.bin/uglifyjs ./build/premain.js --compress "pure_funcs=[F2,F3,F4,F5,F6,F7,F8,F9,A2,A3,A4,A5,A6,A7,A8,A9],pure_getters,keep_fargs=false,unsafe_comps,unsafe" | ./node_modules/.bin/uglifyjs --mangle --output ./build/main.js
           echo $(ls ./build)
