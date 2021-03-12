@@ -31,4 +31,5 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: testing
-        run: echo elm | echo pwd
+        run: |
+          echo $PWD
