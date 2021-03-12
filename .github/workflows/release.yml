@@ -1,39 +1,31 @@
-# This is a basic workflow to help you get started with Actions
-
 name: release-publish
 
-# Controls when the action will run.
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
   release:
     types: [published]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Checkout repository
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
         uses: actions/checkout@v2
 
-      - name: Setup Elm environment
+      - name: Install elm
         uses: JorelAli/setup-elm@v2
         with:
           elm-version: 0.19.1
 
-      - name: Install nodejs and uglify
+      - name: Install nodejs
         uses: actions/setup-node@v2
+
+      - name: Install uglify
         run: npm install uglify-js
 
-      # Runs a single command using the runners shell
       - name: build artifacts
         run: |
           mkdir -p ./build
