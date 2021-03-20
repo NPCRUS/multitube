@@ -33,3 +33,11 @@ jobs:
           elm make --optimize --output=./build/premain.js src/Main.elm
           ./node_modules/.bin/uglifyjs ./build/premain.js --compress "pure_funcs=[F2,F3,F4,F5,F6,F7,F8,F9,A2,A3,A4,A5,A6,A7,A8,A9],pure_getters,keep_fargs=false,unsafe_comps,unsafe" | ./node_modules/.bin/uglifyjs --mangle --output ./build/main.js
           echo $(ls ./build)
+
+      - name: Upload S3
+        uses: shallwefootball/s3-upload-action@master
+        with:
+          aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_ACCESS_KEY_SECRET}}
+          aws_bucket: 'npctest-bucket'
+          source_dir: './build'
