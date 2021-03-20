@@ -36,10 +36,12 @@ jobs:
           echo ${{ secrets.AWS_ACCESS_KEY_ID }}
 
       - name: Upload S3
-        uses: shallwefootball/s3-upload-action@master
+        uses: jakejarvis/s3-sync-action@master
         with:
-          aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
-          aws_bucket: 'npctest-bucket'
-          source_dir: './build'
-          destination_dir: ''
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
+          AWS_S3_BUCKET: 'npctest-bucket'
+          AWS_REGION: 'eu-central-1'
+          SOURCE_DIR: 'build'
