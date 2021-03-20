@@ -16,7 +16,7 @@ streamBlock: (StreamDisplayParams, StreamSource) -> Html Msg
 streamBlock (displayParams, stream) =
     div (outlineBlockBaseStyle ++ streamBlockStyle displayParams )
             [ makeIframe stream
-             , streamToolbar stream ]
+             , streamToolbar displayParams stream ]
 
 streamBlockStyle: StreamDisplayParams -> List (Attribute msg)
 streamBlockStyle displayParams =
@@ -34,11 +34,15 @@ makeIframe stream =
       , HtmlA.attribute "allowfullscreen" "true"
       , HtmlA.attribute "frameborder" "0"]) []
 
-streamToolbar: StreamSource -> Html Msg
-streamToolbar stream =
-    div streamToolbarStyle
-    [ span (toolbarIconStyle ++ [ class "material-icons", onClick (ActivateStream stream) ]) [text "zoom_in"]
-    , span (toolbarIconStyle ++ [ class "material-icons", onClick (DeleteStream stream)]) [text "clear"]]
+streamToolbar: StreamDisplayParams -> StreamSource -> Html Msg
+streamToolbar displayParams stream =
+    if (displayParams.order == 0) then
+        div streamToolbarStyle
+            [ span (toolbarIconStyle ++ [ class "material-icons", onClick (DeleteStream stream)]) [text "clear"]]
+    else
+        div streamToolbarStyle
+            [ span (toolbarIconStyle ++ [ class "material-icons", onClick (ActivateStream stream) ]) [text "zoom_in"]
+            , span (toolbarIconStyle ++ [ class "material-icons", onClick (DeleteStream stream)]) [text "clear"]]
 
 iframeStyle: List (Attribute msg)
 iframeStyle =
