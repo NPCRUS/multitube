@@ -39,7 +39,7 @@ jobs:
         uses: shallwefootball/s3-upload-action@master
         with:
           aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ AWS_ACCESS_KEY_SECRET }}
+          aws_secret_access_key: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
           aws_bucket: 'npctest-bucket'
           source_dir: './build'
           destination_dir: ''
