@@ -8,10 +8,11 @@ type alias InfoModal = { isOpened: Bool }
 
 type StreamDisplayMode = Focused | Balanced
 
-type alias StreamDisplayParams = { mode: StreamDisplayMode, order: Int }
+type StreamDisplayDirection = Vertical | Horizontal
 
-buildStreamDisplayParams: StreamDisplayMode -> Int -> StreamDisplayParams
-buildStreamDisplayParams mode order = { mode = mode, order = order }
+type alias StreamDisplayParams = { mode: StreamDisplayMode
+                                 , direction: StreamDisplayDirection
+                                 , ratio: Float }
 
 type Msg = ActivateStream StreamSource
     | DeleteStream StreamSource
@@ -22,3 +23,7 @@ type Msg = ActivateStream StreamSource
     | OpenInfoModal
     | CloseInfoModal
     | ChangeDisplayMode StreamDisplayMode
+    | OnResize Int Int
+
+type alias Flags = { windowWidth: Int, windowHeight: Int }
+

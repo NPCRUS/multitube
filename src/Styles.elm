@@ -2,7 +2,7 @@ module Styles exposing (..)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (style)
-import Models exposing (StreamDisplayMode(..))
+import Models exposing (StreamDisplayDirection(..), StreamDisplayMode(..), StreamDisplayParams)
 
 flex: List (Attribute msg)
 flex =
@@ -19,6 +19,10 @@ flexRow =
 justifyContentCenter: List (Attribute msg)
 justifyContentCenter =
     [style "justify-content" "center"]
+
+toCalc: Float -> String
+toCalc percent =
+    "calc(" ++ (String.fromFloat percent) ++ "%)"
 
 outerBlockStyle: List (Attribute msg)
 outerBlockStyle =
@@ -40,10 +44,10 @@ activeSpaceBlockStyle =
     , style "width" "100%"
     , style "background-color" "#162B32"]
 
-streamListBlockStyle: StreamDisplayMode ->  List (Attribute msg)
-streamListBlockStyle streamDisplayMode =
+streamListBlockStyle: StreamDisplayParams ->  List (Attribute msg)
+streamListBlockStyle params =
     let
-        baseStyle = if(streamDisplayMode == Focused) then flexColumn else flexRow
+        baseStyle = if(params.mode == Focused && params.direction == Horizontal) then flexColumn else flexRow
     in
         baseStyle ++ [ style "flex-wrap" "wrap"
         , style "width" "100%"
