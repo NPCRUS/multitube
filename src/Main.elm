@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Basics as Int
 import Browser
@@ -31,24 +31,30 @@ init flags =
     let
         windowRatio = calcRatio flags.windowWidth flags.windowHeight
         direction = calcDirection windowRatio
+        initialStreams = case flags.startingSources of
+            Just streams -> streams
+            Nothing -> []
     in
-        ({ streams = []
+        ({ streams = initialStreams
             , streamAddModal = { isOpened = False, inputText = "" }
             , infoModal = { isOpened = False }
             , displayParams = { mode = Focused, direction = direction, ratio = windowRatio } }
             , Cmd.none)
 
 
+-- PORTS
+port setSources: List StreamSource -> Cmd msg
+
 -- UPDATE
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        ActivateStream stream -> (activateStream model stream, Cmd.none)
-        DeleteStream stream -> (deleteStream model stream, Cmd.none)
+        ActivateStream stream -> activateStream model stream
+        DeleteStream stream -> deleteStream model stream
         OpenAddStreamModal -> ({ model | streamAddModal = (updateStreamModalIsOpened True model.streamAddModal ) }, Cmd.none)
         CloseAddStreamModal -> ({ model | streamAddModal = (updateStreamModalIsOpened False model.streamAddModal ) }, Cmd.none)
         ChangeAddStreamModalText inputText -> ({ model | streamAddModal = (updateModalInputText inputText model.streamAddModal )}, Cmd.none)
-        ConfirmStreamAdd -> (addStream model, Cmd.none)
+        ConfirmStreamAdd -> addStream model
         OpenInfoModal -> ({ model | infoModal = (updateInfoModalIsOpened True model.infoModal)}, Cmd.none)
         CloseInfoModal -> ({ model | infoModal = (updateInfoModalIsOpened False model.infoModal)}, Cmd.none)
         ChangeDisplayMode displayMode -> (updateDisplayParams model (\a -> {a | mode = displayMode}), Cmd.none)
@@ -73,7 +79,7 @@ youtubeLinkRegex =
     Maybe.withDefault Regex.never <|
         Regex.fromString "\\?v=(\\w*)\\&?"
 
-addStream: Model -> Model
+addStream: Model -> (Model, Cmd msg)
 addStream model =
     let
         matchMaybe = (Regex.find youtubeLinkRegex model.streamAddModal.inputText)
@@ -85,8 +91,9 @@ addStream model =
             Just m -> case (m) of
                 Nothing -> model.streamAddModal.inputText
                 Just token -> token
+        newModel = updateModelAndAddStream matchString model
     in
-        updateModelAndAddStream matchString model
+        (newModel, setSources newModel.streams)
 
 updateModelAndAddStream: String -> Model -> Model
 updateModelAndAddStream source model =
@@ -105,21 +112,21 @@ updateModalInputText: String -> StreamAddModal -> StreamAddModal
 updateModalInputText inputText modal  =
     { modal | inputText = inputText }
 
-activateStream: Model -> StreamSource -> Model
+activateStream: Model -> StreamSource -> (Model, Cmd msg)
 activateStream model stream =
     let
         newList = model.streams
             |> List.filter (\a -> a.source /= stream.source)
             |> (++) [ stream ]
     in
-        { model | streams = newList }
+        ({ model | streams = newList }, setSources newList)
 
-deleteStream: Model -> StreamSource -> Model
+deleteStream: Model -> StreamSource -> (Model, Cmd msg)
 deleteStream model stream =
     let
         newList = List.filter (\a -> a.source /= stream.source) model.streams
     in
-        { model | streams = newList }
+        ({ model | streams = newList }, setSources newList)
 
 updateDisplayParams: Model -> (StreamDisplayParams -> StreamDisplayParams) -> Model
 updateDisplayParams model updateFunc =

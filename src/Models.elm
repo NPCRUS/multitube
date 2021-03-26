@@ -25,5 +25,5 @@ type Msg = ActivateStream StreamSource
     | ChangeDisplayMode StreamDisplayMode
     | OnResize Int Int
 
-type alias Flags = { windowWidth: Int, windowHeight: Int }
+type alias Flags = { windowWidth: Int, windowHeight: Int, startingSources: Maybe (List StreamSource) }
 
