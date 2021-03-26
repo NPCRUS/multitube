@@ -26,18 +26,13 @@ type alias Model = { streams: List StreamSource
                     , infoModal: InfoModal
                     , displayParams: StreamDisplayParams }
 
-testSources: List StreamSource
-testSources = [ { source = "5qap5aO4i9A" }
-                , { source = "GfyJ5XBchoQ" }
-                , { source = "NZmBPEETHOA" }]
-
 init : Flags -> (Model, Cmd Msg)
 init flags =
     let
         windowRatio = calcRatio flags.windowWidth flags.windowHeight
         direction = calcDirection windowRatio
     in
-        ({ streams = testSources
+        ({ streams = []
             , streamAddModal = { isOpened = False, inputText = "" }
             , infoModal = { isOpened = False }
             , displayParams = { mode = Focused, direction = direction, ratio = windowRatio } }
