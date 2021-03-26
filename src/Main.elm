@@ -10,8 +10,9 @@ import Html exposing (..)
 import Html.Attributes exposing (class, style, title)
 import Html.Events exposing (onClick)
 import Html.Keyed as Keyed
+import Json.Decode exposing (decodeValue)
 import Maybe exposing (andThen)
-import Models exposing (Flags, InfoModal, Msg(..), StreamAddModal, StreamDisplayDirection(..), StreamDisplayMode(..), StreamDisplayParams, StreamSource)
+import Models exposing (Flags, InfoModal, Msg(..), StreamAddModal, StreamDisplayDirection(..), StreamDisplayMode(..), StreamDisplayParams, StreamPlatform(..), StreamSource, encodeStreamListToString, flagsDecoder)
 import Regex
 import Styles exposing (..)
 
@@ -26,9 +27,12 @@ type alias Model = { streams: List StreamSource
                     , infoModal: InfoModal
                     , displayParams: StreamDisplayParams }
 
-init : Flags -> (Model, Cmd Msg)
-init flags =
+init : Json.Decode.Value -> (Model, Cmd Msg)
+init flagsRaw =
     let
+        (flags, cmd) = case decodeValue flagsDecoder flagsRaw of
+            Ok decoded -> (decoded, Cmd.none)
+            Err _ -> ({ windowWidth = 1920, windowHeight = 1080, startingSources = Just []}, setSources ((encodeStreamListToString [])))
         windowRatio = calcRatio flags.windowWidth flags.windowHeight
         direction = calcDirection windowRatio
         initialStreams = case flags.startingSources of
@@ -39,11 +43,11 @@ init flags =
             , streamAddModal = { isOpened = False, inputText = "" }
             , infoModal = { isOpened = False }
             , displayParams = { mode = Focused, direction = direction, ratio = windowRatio } }
-            , Cmd.none)
+            ,cmd)
 
 
 -- PORTS
-port setSources: List StreamSource -> Cmd msg
+port setSources: String -> Cmd msg
 
 -- UPDATE
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -93,11 +97,11 @@ addStream model =
                 Just token -> token
         newModel = updateModelAndAddStream matchString model
     in
-        (newModel, setSources newModel.streams)
+        (newModel, setSources ((encodeStreamListToString  newModel.streams)))
 
 updateModelAndAddStream: String -> Model -> Model
 updateModelAndAddStream source model =
-    { model | streams = (model.streams ++ [{ source = source }])
+    { model | streams = (model.streams ++ [{ source = source, platform = Youtube }])
         , streamAddModal = model.streamAddModal |> updateStreamModalIsOpened False |> updateModalInputText "" }
 
 updateStreamModalIsOpened: Bool -> StreamAddModal -> StreamAddModal
@@ -119,14 +123,14 @@ activateStream model stream =
             |> List.filter (\a -> a.source /= stream.source)
             |> (++) [ stream ]
     in
-        ({ model | streams = newList }, setSources newList)
+        ({ model | streams = newList }, setSources (encodeStreamListToString newList))
 
 deleteStream: Model -> StreamSource -> (Model, Cmd msg)
 deleteStream model stream =
     let
         newList = List.filter (\a -> a.source /= stream.source) model.streams
     in
-        ({ model | streams = newList }, setSources newList)
+        ({ model | streams = newList }, setSources (encodeStreamListToString newList))
 
 updateDisplayParams: Model -> (StreamDisplayParams -> StreamDisplayParams) -> Model
 updateDisplayParams model updateFunc =

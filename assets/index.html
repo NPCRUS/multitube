@@ -21,7 +21,7 @@
                 node: document.getElementById('multitube')
             });
              app.ports.setSources.subscribe(function(state) {
-                localStorage.setItem('sources', JSON.stringify(state));
+                localStorage.setItem('sources', state);
             });
         </script>
     </body>
