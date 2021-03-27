@@ -110,14 +110,17 @@ addStream model =
     in
         case maybeSource of
             Just streamSource ->
-                (updateModelAndAddStream streamSource model, Cmd.none)
+                let
+                    newModel = updateModelAndAddStream streamSource model
+                in
+                    (newModel, setSources (encodeStreamListToString newModel.streams))
             Nothing ->
                 ({ model | streamAddModal = model.streamAddModal |> updateModalErrorText "cannot add stream" }, Cmd.none)
 
 updateModelAndAddStream: StreamSource -> Model -> Model
 updateModelAndAddStream source model =
-    { model | streams = (model.streams ++ [source])
-        , streamAddModal = model.streamAddModal |> updateStreamModalIsOpened False |> updateModalInputText "" |> updateModalErrorText "" }
+    ({ model | streams = (model.streams ++ [source])
+        , streamAddModal = model.streamAddModal |> updateStreamModalIsOpened False |> updateModalInputText "" |> updateModalErrorText "" })
 
 updateStreamModalIsOpened: Bool -> StreamAddModal -> StreamAddModal
 updateStreamModalIsOpened isOpened modal =
