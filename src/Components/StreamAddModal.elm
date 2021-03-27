@@ -12,6 +12,7 @@ streamAddModal modal =
     div modalStyle
     [ modalHeader
     , modalBody modal.inputText
+    , modalErrorText modal.errorText
     , modalSubmitSection ]
 
 modalHeader: Html Msg
@@ -21,10 +22,18 @@ modalHeader =
 
 modalBody: String -> Html Msg
 modalBody inputText =
-    div (flexColumn ++ width100 ++ [style "justify-content" "center"])
-    [ span [ style "color" "white", style "font-size" "18px"] [ text "Input video token or link to youtube stream/video" ]
-    , input [ value inputText, onInput ChangeAddStreamModalText ] []]
+    let
+        infoText = "Input link to youtube stream/video or twitch stream"
+    in
+        div (flexColumn ++ width100 ++ [style "justify-content" "center"])
+        [ span [ style "color" "white", style "font-size" "18px"] [ text infoText ]
+        , input [ value inputText, onInput ChangeAddStreamModalText ] []]
 
+modalErrorText: String -> Html Msg
+modalErrorText errorText =
+    div [] [ text errorText ]
+
+modalSubmitSection: Html Msg
 modalSubmitSection =
     div (flexRow ++ width100 ++ [ style "justify-content" "center"])
     [ button (confirmButtonStyle ++ [ onClick ConfirmStreamAdd ]) [ text "Confirm"] ]

@@ -15,6 +15,7 @@ import Maybe exposing (andThen)
 import Models exposing (Flags, InfoModal, Msg(..), StreamAddModal, StreamDisplayDirection(..), StreamDisplayMode(..), StreamDisplayParams, StreamPlatform(..), StreamSource, encodeStreamListToString, flagsDecoder)
 import Regex
 import Styles exposing (..)
+import Utils exposing (maybeFlatten2)
 
 main =
     Browser.element { init = init
@@ -40,7 +41,7 @@ init flagsRaw =
             Nothing -> []
     in
         ({ streams = initialStreams
-            , streamAddModal = { isOpened = False, inputText = "" }
+            , streamAddModal = { isOpened = False, inputText = "", errorText = "" }
             , infoModal = { isOpened = False }
             , displayParams = { mode = Focused, direction = direction, ratio = windowRatio } }
             ,cmd)
@@ -56,7 +57,7 @@ update msg model =
         ActivateStream stream -> activateStream model stream
         DeleteStream stream -> deleteStream model stream
         OpenAddStreamModal -> ({ model | streamAddModal = (updateStreamModalIsOpened True model.streamAddModal ) }, Cmd.none)
-        CloseAddStreamModal -> ({ model | streamAddModal = (updateStreamModalIsOpened False model.streamAddModal ) }, Cmd.none)
+        CloseAddStreamModal -> ({ model | streamAddModal = (updateStreamModalIsOpened False model.streamAddModal |> updateModalErrorText "" |> updateModalInputText "" ) }, Cmd.none)
         ChangeAddStreamModalText inputText -> ({ model | streamAddModal = (updateModalInputText inputText model.streamAddModal )}, Cmd.none)
         ConfirmStreamAdd -> addStream model
         OpenInfoModal -> ({ model | infoModal = (updateInfoModalIsOpened True model.infoModal)}, Cmd.none)
@@ -81,28 +82,42 @@ calcDirection ratio =
 youtubeLinkRegex: Regex.Regex
 youtubeLinkRegex =
     Maybe.withDefault Regex.never <|
-        Regex.fromString "\\?v=(\\w*)\\&?"
+        Regex.fromString "\\.*?v=(\\w*)\\&?"
+
+twitchLinkRegex: Regex.Regex
+twitchLinkRegex =
+    Maybe.withDefault Regex.never <|
+        Regex.fromString ".*twitch\\.tv\\/(.*)"
 
 addStream: Model -> (Model, Cmd msg)
 addStream model =
     let
-        matchMaybe = (Regex.find youtubeLinkRegex model.streamAddModal.inputText)
+        youtubeMatchMaybe = (Regex.find youtubeLinkRegex model.streamAddModal.inputText)
             |> List.head
             |> Maybe.map .submatches
             |> andThen List.head
-        matchString = case matchMaybe of
-            Nothing -> model.streamAddModal.inputText
-            Just m -> case (m) of
-                Nothing -> model.streamAddModal.inputText
-                Just token -> token
-        newModel = updateModelAndAddStream matchString model
+            |> maybeFlatten2
+        twitchMatchMaybe = (Regex.find twitchLinkRegex model.streamAddModal.inputText)
+            |> List.head
+            |> Maybe.map .submatches
+            |> andThen List.head
+            |> maybeFlatten2
+        maybeSource = case (twitchMatchMaybe, youtubeMatchMaybe) of
+            (Just twitch, Nothing) -> Just { source = twitch, platform = Twitch }
+            (Nothing, Just youtube) -> Just { source = youtube, platform = Youtube }
+            (Nothing, Nothing) -> Nothing
+            (Just _, Just _) -> Nothing -- wtf???
     in
-        (newModel, setSources ((encodeStreamListToString  newModel.streams)))
+        case maybeSource of
+            Just streamSource ->
+                (updateModelAndAddStream streamSource model, Cmd.none)
+            Nothing ->
+                ({ model | streamAddModal = model.streamAddModal |> updateModalErrorText "cannot add stream" }, Cmd.none)
 
-updateModelAndAddStream: String -> Model -> Model
+updateModelAndAddStream: StreamSource -> Model -> Model
 updateModelAndAddStream source model =
-    { model | streams = (model.streams ++ [{ source = source, platform = Youtube }])
-        , streamAddModal = model.streamAddModal |> updateStreamModalIsOpened False |> updateModalInputText "" }
+    { model | streams = (model.streams ++ [source])
+        , streamAddModal = model.streamAddModal |> updateStreamModalIsOpened False |> updateModalInputText "" |> updateModalErrorText "" }
 
 updateStreamModalIsOpened: Bool -> StreamAddModal -> StreamAddModal
 updateStreamModalIsOpened isOpened modal =
@@ -115,6 +130,10 @@ updateInfoModalIsOpened isOpened modal =
 updateModalInputText: String -> StreamAddModal -> StreamAddModal
 updateModalInputText inputText modal  =
     { modal | inputText = inputText }
+
+updateModalErrorText: String -> StreamAddModal -> StreamAddModal
+updateModalErrorText errorText modal =
+    { modal | errorText = errorText }
 
 activateStream: Model -> StreamSource -> (Model, Cmd msg)
 activateStream model stream =

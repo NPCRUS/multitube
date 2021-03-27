@@ -7,7 +7,7 @@ type alias StreamSource = { source: String, platform: StreamPlatform }
 
 type StreamPlatform = Youtube | Twitch
 
-type alias StreamAddModal = { isOpened: Bool, inputText: String }
+type alias StreamAddModal = { isOpened: Bool, inputText: String, errorText: String }
 
 type alias InfoModal = { isOpened: Bool }
 

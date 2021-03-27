@@ -5,7 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Attributes as HtmlA
 import Html.Events exposing (onClick)
 import Html.Lazy exposing (lazy)
-import Models exposing (Msg(..), StreamDisplayDirection(..), StreamDisplayMode(..), StreamDisplayParams, StreamSource)
+import Models exposing (Msg(..), StreamDisplayDirection(..), StreamDisplayMode(..), StreamDisplayParams, StreamPlatform(..), StreamSource)
 import Styles exposing (flexColumn, toCalc, toolbarIconStyle)
 
 keyedStreamBlock: (StreamDisplayParams, Int) -> StreamSource -> (String, Html Msg)
@@ -45,12 +45,30 @@ streamBlockStyle displayParams order =
 
 makeIframe: StreamSource -> Html Msg
 makeIframe stream =
+    if(stream.platform == Youtube) then
+        youtubeIframe stream
+    else
+        twitchIframe stream
+
+youtubeIframe: StreamSource -> Html msg
+youtubeIframe stream =
     Html.iframe
-      (iframeStyle ++ [ src ("https://www.youtube-nocookie.com/embed/" ++ stream.source ++ "?autoplay=1&mute=1")
-      , HtmlA.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-      , HtmlA.type_ "text/html"
-      , HtmlA.attribute "allowfullscreen" "true"
-      , HtmlA.attribute "frameborder" "0"]) []
+          (iframeStyle ++ [ src ("https://www.youtube-nocookie.com/embed/" ++ stream.source ++ "?autoplay=1&mute=1")
+          , HtmlA.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+          , HtmlA.type_ "text/html"
+          , HtmlA.attribute "allowfullscreen" "true"
+          , HtmlA.attribute "frameborder" "0"]) []
+
+twitchIframe: StreamSource -> Html msg
+twitchIframe stream =
+    let
+        attr = "&muted=true&parent=localhost&parent=multitube.dev"
+    in
+        Html.iframe
+            (iframeStyle ++ [ (src ("https://player.twitch.tv/?channel=" ++ stream.source ++ attr))
+             , HtmlA.attribute "width" "100%"
+             , HtmlA.attribute "height" "100%"
+             , HtmlA.attribute "allowfullscreen" "true"]) []
 
 streamToolbar: Int -> StreamSource -> Html Msg
 streamToolbar order stream =
