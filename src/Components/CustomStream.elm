@@ -66,6 +66,7 @@ twitchIframe stream =
     in
         Html.iframe
             (iframeStyle ++ [ (src ("https://player.twitch.tv/?channel=" ++ stream.source ++ attr))
+             , style "border-width" "0"
              , HtmlA.attribute "width" "100%"
              , HtmlA.attribute "height" "100%"
              , HtmlA.attribute "allowfullscreen" "true"]) []
