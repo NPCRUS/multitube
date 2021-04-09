@@ -4,7 +4,7 @@ import Components.CustomStream exposing (width100)
 import Html exposing (Attribute, Html, a, div, img, span, text)
 import Html.Attributes exposing (class, height, href, src, style, target, width)
 import Html.Events exposing (onClick)
-import Models exposing (InfoModal, Msg(..))
+import Msg exposing (..)
 import Styles exposing (flexColumn, flexRow, toolbarIconStyle)
 
 infoModal: Html Msg

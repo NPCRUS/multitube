@@ -4,10 +4,11 @@ import Components.CustomStream exposing (width100)
 import Html exposing (Attribute, Html, button, div, input, span, text)
 import Html.Attributes exposing (class, style, value)
 import Html.Events exposing (onClick, onInput)
-import Models exposing (Msg(..), StreamAddModal)
+import Msg exposing (..)
+import Data.StreamAddModal as StreamAddModal exposing (..)
 import Styles exposing (flexColumn, flexRow, toolbarIconStyle)
 
-streamAddModal: StreamAddModal -> Html Msg
+streamAddModal: StreamAddModal.Model -> Html Msg
 streamAddModal modal =
     div modalStyle
     [ modalHeader

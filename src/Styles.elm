@@ -2,7 +2,7 @@ module Styles exposing (..)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (style)
-import Models exposing (StreamDisplayDirection(..), StreamDisplayMode(..), StreamDisplayParams)
+import Data.DisplayParams as DisplayParams exposing (..)
 
 flex: List (Attribute msg)
 flex =
@@ -44,7 +44,7 @@ activeSpaceBlockStyle =
     , style "width" "100%"
     , style "background-color" "#162B32"]
 
-streamListBlockStyle: StreamDisplayParams ->  List (Attribute msg)
+streamListBlockStyle: DisplayParams.Model ->  List (Attribute msg)
 streamListBlockStyle params =
     let
         baseStyle = if(params.mode == Focused && params.direction == Horizontal) then flexColumn else flexRow

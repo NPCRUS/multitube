@@ -12,7 +12,12 @@ import Html.Events exposing (onClick)
 import Html.Keyed as Keyed
 import Json.Decode exposing (decodeValue)
 import Maybe exposing (andThen)
-import Models exposing (Flags, InfoModal, Msg(..), StreamAddModal, StreamDisplayDirection(..), StreamDisplayMode(..), StreamDisplayParams, StreamPlatform(..), StreamSource, encodeStreamListToString, flagsDecoder)
+import Data.StreamSource as StreamSource exposing (..)
+import Data.StreamAddModal as StreamAddModal exposing (..)
+import Data.InfoModal as InfoModal exposing (..)
+import Data.DisplayParams as DisplayParams exposing (..)
+import Data.Flags exposing (..)
+import Msg exposing (..)
 import Regex
 import Styles exposing (..)
 import Utils exposing (maybeFlatten2)
@@ -23,10 +28,10 @@ main =
                     , update = update
                     , subscriptions = subscriptions }
 
-type alias Model = { streams: List StreamSource
-                    , streamAddModal: StreamAddModal
-                    , infoModal: InfoModal
-                    , displayParams: StreamDisplayParams }
+type alias Model = { streams: List StreamSource.Model
+                    , streamAddModal: StreamAddModal.Model
+                    , infoModal: InfoModal.Model
+                    , displayParams: DisplayParams.Model }
 
 init : Json.Decode.Value -> (Model, Cmd Msg)
 init flagsRaw =
@@ -51,31 +56,27 @@ init flagsRaw =
 port setSources: String -> Cmd msg
 
 -- UPDATE
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        ActivateStream stream -> activateStream model stream
-        DeleteStream stream -> deleteStream model stream
-        OpenAddStreamModal -> ({ model | streamAddModal = (updateStreamModalIsOpened True model.streamAddModal ) }, Cmd.none)
-        CloseAddStreamModal -> ({ model | streamAddModal = (updateStreamModalIsOpened False model.streamAddModal |> updateModalErrorText "" |> updateModalInputText "" ) }, Cmd.none)
-        ChangeAddStreamModalText inputText -> ({ model | streamAddModal = (updateModalInputText inputText model.streamAddModal )}, Cmd.none)
-        ConfirmStreamAdd -> addStream model
-        OpenInfoModal -> ({ model | infoModal = (updateInfoModalIsOpened True model.infoModal)}, Cmd.none)
-        CloseInfoModal -> ({ model | infoModal = (updateInfoModalIsOpened False model.infoModal)}, Cmd.none)
-        ChangeDisplayMode displayMode -> (updateDisplayParams model (\a -> {a | mode = displayMode}), Cmd.none)
-        OnResize width height ->
-            let
-                ratio = calcRatio width height
-                direction = calcDirection ratio
-            in
-                (updateDisplayParams model (\a -> {a | direction = direction, ratio = ratio}), Cmd.none)
+        ActivateStream stream -> onActivateStream model stream
+        DeleteStream stream -> onDeleteStream model stream
+        OpenAddStreamModal -> onOpenAddStreamModal model
+        CloseAddStreamModal -> onCloseAddStreamModal model
+        ChangeAddStreamModalText inputText -> onChangeAddStreamModalText model inputText
+        ConfirmStreamAdd -> onConfirmStreamAdd model
+        OpenInfoModal -> ({ model | infoModal = model.infoModal |> InfoModal.setIsOpened True }, Cmd.none)
+        CloseInfoModal -> ({ model | infoModal = model.infoModal |> InfoModal.setIsOpened False }, Cmd.none)
+        ChangeDisplayMode displayMode -> onChangeDisplayMode model displayMode
+        OnResize width height -> onResize model width height
 
 calcRatio: Int -> Int -> Float
 calcRatio width height =
     (Int.toFloat width) / ( Int.toFloat height)
 
--- 1.035 is some magic number that so far works on both of 27inch 1440p and 24inch 1080p screens when you collapse browser window into half
-calcDirection: Float -> StreamDisplayDirection
+-- 1.035 is some magic number that so far works on both 27inch 1440p and 24inch 1080p screens when you collapse browser window into half
+calcDirection: Float -> DisplayParams.Direction
 calcDirection ratio =
     if(ratio > 1.035) then Horizontal else Vertical
 
@@ -89,8 +90,46 @@ twitchLinkRegex =
     Maybe.withDefault Regex.never <|
         Regex.fromString ".*twitch\\.tv\\/(.*)"
 
-addStream: Model -> (Model, Cmd msg)
-addStream model =
+onActivateStream: Model -> StreamSource.Model -> (Model, Cmd msg)
+onActivateStream model stream =
+    let
+        newList = model.streams
+            |> List.filter (\a -> a.token /= stream.token)
+            |> (++) [ stream ]
+    in
+        ({ model | streams = newList }, setSources (encodeStreamListToString newList))
+
+onDeleteStream: Model -> StreamSource.Model -> (Model, Cmd msg)
+onDeleteStream model stream =
+    let
+        newList = List.filter (\a -> a.token /= stream.token) model.streams
+    in
+        ({ model | streams = newList }, setSources (encodeStreamListToString newList))
+
+onOpenAddStreamModal: Model -> (Model, Cmd msg)
+onOpenAddStreamModal model =
+    ({ model |
+        streamAddModal = model.streamAddModal |> StreamAddModal.setIsOpened True }
+    , Cmd.none)
+
+onCloseAddStreamModal: Model -> (Model, Cmd msg)
+onCloseAddStreamModal model =
+    ({ model |
+        streamAddModal = model.streamAddModal
+            |> StreamAddModal.setIsOpened False
+            |> StreamAddModal.setInputText ""
+            |> StreamAddModal.setErrorText ""}
+    , Cmd.none)
+
+onChangeAddStreamModalText: Model -> String -> (Model, Cmd msg)
+onChangeAddStreamModalText model inputText =
+    ({ model |
+        streamAddModal = model.streamAddModal
+            |> StreamAddModal.setInputText inputText}
+    , Cmd.none)
+
+onConfirmStreamAdd: Model -> (Model, Cmd msg)
+onConfirmStreamAdd model =
     let
         youtubeMatchMaybe = (Regex.find youtubeLinkRegex model.streamAddModal.inputText)
             |> List.head
@@ -103,61 +142,36 @@ addStream model =
             |> andThen List.head
             |> maybeFlatten2
         maybeSource = case (twitchMatchMaybe, youtubeMatchMaybe) of
-            (Just twitch, Nothing) -> Just { source = twitch, platform = Twitch }
-            (Nothing, Just youtube) -> Just { source = youtube, platform = Youtube }
+            (Just twitch, Nothing) -> Just { token = twitch, platform = Twitch }
+            (Nothing, Just youtube) -> Just { token = youtube, platform = Youtube }
             (Nothing, Nothing) -> Nothing
             (Just _, Just _) -> Nothing -- wtf???
     in
         case maybeSource of
             Just streamSource ->
                 let
-                    newModel = updateModelAndAddStream streamSource model
+                    newModel =
+                        { model | streams = model.streams ++ [streamSource]
+                        , streamAddModal = model.streamAddModal
+                            |> StreamAddModal.setIsOpened False
+                            |> StreamAddModal.setInputText ""
+                            |> StreamAddModal.setErrorText "" }
                 in
                     (newModel, setSources (encodeStreamListToString newModel.streams))
             Nothing ->
-                ({ model | streamAddModal = model.streamAddModal |> updateModalErrorText "cannot add stream" }, Cmd.none)
+                ({ model | streamAddModal = model.streamAddModal |> StreamAddModal.setErrorText "cannot add stream" }, Cmd.none)
 
-updateModelAndAddStream: StreamSource -> Model -> Model
-updateModelAndAddStream source model =
-    ({ model | streams = (model.streams ++ [source])
-        , streamAddModal = model.streamAddModal |> updateStreamModalIsOpened False |> updateModalInputText "" |> updateModalErrorText "" })
+onChangeDisplayMode: Model -> DisplayParams.Mode -> (Model, Cmd msg)
+onChangeDisplayMode model mode =
+    ({ model | displayParams = model.displayParams |> DisplayParams.setMode mode }, Cmd.none)
 
-updateStreamModalIsOpened: Bool -> StreamAddModal -> StreamAddModal
-updateStreamModalIsOpened isOpened modal =
-    { modal | isOpened = isOpened }
-
-updateInfoModalIsOpened: Bool -> InfoModal -> InfoModal
-updateInfoModalIsOpened isOpened modal =
-    { modal | isOpened = isOpened }
-
-updateModalInputText: String -> StreamAddModal -> StreamAddModal
-updateModalInputText inputText modal  =
-    { modal | inputText = inputText }
-
-updateModalErrorText: String -> StreamAddModal -> StreamAddModal
-updateModalErrorText errorText modal =
-    { modal | errorText = errorText }
-
-activateStream: Model -> StreamSource -> (Model, Cmd msg)
-activateStream model stream =
+onResize: Model -> Int -> Int -> (Model, Cmd msg)
+onResize model width height =
     let
-        newList = model.streams
-            |> List.filter (\a -> a.source /= stream.source)
-            |> (++) [ stream ]
+        ratio = calcRatio width height
+        direction = calcDirection ratio
     in
-        ({ model | streams = newList }, setSources (encodeStreamListToString newList))
-
-deleteStream: Model -> StreamSource -> (Model, Cmd msg)
-deleteStream model stream =
-    let
-        newList = List.filter (\a -> a.source /= stream.source) model.streams
-    in
-        ({ model | streams = newList }, setSources (encodeStreamListToString newList))
-
-updateDisplayParams: Model -> (StreamDisplayParams -> StreamDisplayParams) -> Model
-updateDisplayParams model updateFunc =
-    {model | displayParams = updateFunc model.displayParams }
-
+        ({ model | displayParams = model.displayParams |> DisplayParams.setDirection direction |> DisplayParams.setRatio ratio }, Cmd.none)
 
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
@@ -185,7 +199,7 @@ view model =
             , infoModal_
         ]
 
-buildStreamList: StreamDisplayParams -> (List StreamSource) -> (Html Msg)
+buildStreamList: DisplayParams.Model -> (List StreamSource.Model) -> (Html Msg)
 buildStreamList displayParams streams =
     if (List.length streams > 0) then
         Keyed.node "div"
@@ -194,7 +208,7 @@ buildStreamList displayParams streams =
     else
         button (addStreamButtonStyle ++ [ onClick OpenAddStreamModal ]) [ text "Add your first stream"]
 
-buildFocusedStreamBlock: StreamDisplayParams -> Int -> StreamSource -> (String, Html Msg)
+buildFocusedStreamBlock: DisplayParams.Model -> Int -> StreamSource.Model -> (String, Html Msg)
 buildFocusedStreamBlock displayParams order stream = keyedStreamBlock (displayParams, order) stream
 
 toolbarBlock: Html Msg
