@@ -14,13 +14,15 @@
     <body style="margin: 0; height: 100%;">
         <div id="multitube"></div>
         <script>
+            var version = 'DEV';
             var storedState = localStorage.getItem('sources');
             var startingState = storedState ? JSON.parse(storedState) : null;
             var app = Elm.Main.init({
                 flags: {
                     windowWidth: window.innerWidth,
                     windowHeight: window.innerHeight,
-                    startingSources: startingState
+                    startingSources: startingState,
+                    version: version
                 },
                 node: document.getElementById('multitube')
             });

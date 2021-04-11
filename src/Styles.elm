@@ -76,3 +76,9 @@ addStreamButtonStyle =
 toolbarLeftBlockStyle: List (Attribute msg)
 toolbarLeftBlockStyle =
     flexRow ++ [ style "align-items" "center"]
+
+versionLinkStyle: List (Attribute msg)
+versionLinkStyle =
+    flex ++ [ style "align-self" "center"
+    , style "margin-right" "5px"
+    , style "color" "white"]

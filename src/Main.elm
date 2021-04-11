@@ -7,7 +7,7 @@ import Components.CustomStream exposing (keyedStreamBlock)
 import Components.InfoModal exposing (infoModal)
 import Components.StreamAddModal exposing (streamAddModal)
 import Html exposing (..)
-import Html.Attributes exposing (class, style, title)
+import Html.Attributes exposing (class, href, style, target, title)
 import Html.Events exposing (onClick)
 import Html.Keyed as Keyed
 import Json.Decode exposing (decodeValue)
@@ -31,14 +31,15 @@ main =
 type alias Model = { streams: List StreamSource.Model
                     , streamAddModal: StreamAddModal.Model
                     , infoModal: InfoModal.Model
-                    , displayParams: DisplayParams.Model }
+                    , displayParams: DisplayParams.Model
+                    , version: String }
 
 init : Json.Decode.Value -> (Model, Cmd Msg)
 init flagsRaw =
     let
         (flags, cmd) = case decodeValue flagsDecoder flagsRaw of
             Ok decoded -> (decoded, Cmd.none)
-            Err _ -> ({ windowWidth = 1920, windowHeight = 1080, startingSources = Just []}, setSources ((encodeStreamListToString [])))
+            Err _ -> ({ windowWidth = 1920, windowHeight = 1080, startingSources = Just [], version = "DEV" }, setSources ((encodeStreamListToString [])))
         windowRatio = calcRatio flags.windowWidth flags.windowHeight
         direction = calcDirection windowRatio
         initialStreams = case flags.startingSources of
@@ -48,7 +49,8 @@ init flagsRaw =
         ({ streams = initialStreams
             , streamAddModal = { isOpened = False, inputText = "", errorText = "" }
             , infoModal = { isOpened = False }
-            , displayParams = { mode = Focused, direction = direction, ratio = windowRatio } }
+            , displayParams = { mode = Focused, direction = direction, ratio = windowRatio }
+            , version = flags.version }
             ,cmd)
 
 
@@ -193,7 +195,7 @@ view model =
             False -> div [][]
         activeBlockStyle = if(List.length model.streams) > 0 then activeSpaceBlockStyle else activeSpaceBlockStyle ++ justifyContentCenter
     in
-        div outerBlockStyle [ toolbarBlock
+        div outerBlockStyle [ toolbarBlock model
             , div activeBlockStyle [buildStreamList model.displayParams model.streams]
             , addStreamModal
             , infoModal_
@@ -211,8 +213,8 @@ buildStreamList displayParams streams =
 buildFocusedStreamBlock: DisplayParams.Model -> Int -> StreamSource.Model -> (String, Html Msg)
 buildFocusedStreamBlock displayParams order stream = keyedStreamBlock (displayParams, order) stream
 
-toolbarBlock: Html Msg
-toolbarBlock =
+toolbarBlock: Model -> Html Msg
+toolbarBlock model =
     div toolbarBlockStyle
         [ div toolbarLeftBlockStyle
             [
@@ -220,7 +222,10 @@ toolbarBlock =
                 , span (toolbarIconStyle ++ [ title "switch to focused view", style "margin-right" "2px", class "material-icons", onClick (ChangeDisplayMode Focused) ]) [text "view_sidebar"]
                 , span (toolbarIconStyle ++ [ title "switch to balanced view", style "margin-right" "2px", class "material-icons", onClick (ChangeDisplayMode Balanced) ]) [text "view_module"]
             ]
-        , div []
+        , div flexRow
             [
-                span (toolbarIconStyle ++ [ title "info about website", class "material-icons", onClick OpenInfoModal]) [text "help_outline"] ]
+                a  (versionLinkStyle ++ [href ("https://github.com/NPCRUS/multitube/releases/tag/" ++ model.version)
+                , target "_blank"])
+                    [text ("v" ++ model.version)]
+                , span (toolbarIconStyle ++ [ title "info about website", class "material-icons", onClick OpenInfoModal]) [text "help_outline"] ]
             ]
