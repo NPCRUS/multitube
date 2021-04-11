@@ -29,7 +29,9 @@ jobs:
       - name: build artifacts
         run: |
           mkdir -p ./build
+          echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
           cp -a ./assets/. ./build/
+          sed -i "s/DEV/$RELEASE_VERSION/" ./build/index.html
           elm make --optimize --output=./build/premain.js src/Main.elm
           ./node_modules/.bin/uglifyjs ./build/premain.js --compress "pure_funcs=[F2,F3,F4,F5,F6,F7,F8,F9,A2,A3,A4,A5,A6,A7,A8,A9],pure_getters,keep_fargs=false,unsafe_comps,unsafe" | ./node_modules/.bin/uglifyjs --mangle --output ./build/main.js
           rm ./build/premain.js
