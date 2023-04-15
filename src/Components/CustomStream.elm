@@ -55,7 +55,8 @@ makeIframe stream =
 youtubeIframe: StreamSource.Model -> Html msg
 youtubeIframe stream =
     Html.iframe
-          (iframeStyle ++ [ src ("https://www.youtube-nocookie.com/embed/" ++ stream.token ++ "?autoplay=1&mute=1")
+          (iframeStyle ++ [ src ("https://www.youtube-nocookie.com/embed/" ++ stream.token ++ "?enablejsapi=1&autoplay=1&mute=1")
+          , HtmlA.id stream.token
           , HtmlA.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
           , HtmlA.type_ "text/html"
           , HtmlA.attribute "allowfullscreen" "true"

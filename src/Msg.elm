@@ -13,3 +13,5 @@ type Msg = ActivateStream StreamSource.Model
     | CloseInfoModal
     | ChangeDisplayMode DisplayParams.Mode
     | OnResize Int Int
+    | PlaySynchronized
+    | PauseSynchronized

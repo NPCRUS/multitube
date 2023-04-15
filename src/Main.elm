@@ -6,6 +6,7 @@ import Browser.Events as Events
 import Components.CustomStream exposing (keyedStreamBlock)
 import Components.InfoModal exposing (infoModal)
 import Components.StreamAddModal exposing (streamAddModal)
+import Data.SynchronizedAction exposing (ActionType(..), synchronizedActionEncoder)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, style, target, title)
 import Html.Events exposing (onClick)
@@ -37,14 +38,15 @@ type alias Model = { streams: List StreamSource.Model
 init : Json.Decode.Value -> (Model, Cmd Msg)
 init flagsRaw =
     let
-        (flags, cmd) = case decodeValue flagsDecoder flagsRaw of
-            Ok decoded -> (decoded, Cmd.none)
-            Err _ -> ({ windowWidth = 1920, windowHeight = 1080, startingSources = Just [], version = "DEV" }, setSources ((encodeStreamListToString [])))
+        flags = case decodeValue flagsDecoder flagsRaw of
+            Ok decoded -> decoded
+            Err _ -> { windowWidth = 1920, windowHeight = 1080, startingSources = Just [], version = "DEV" }
         windowRatio = calcRatio flags.windowWidth flags.windowHeight
         direction = calcDirection windowRatio
         initialStreams = case flags.startingSources of
             Just streams -> streams
             Nothing -> []
+        cmd = setSources (encodeStreamListToString initialStreams)
     in
         ({ streams = initialStreams
             , streamAddModal = { isOpened = False, inputText = "", errorText = "" }
@@ -56,6 +58,7 @@ init flagsRaw =
 
 -- PORTS
 port setSources: String -> Cmd msg
+port runSynchronizedAction: String -> Cmd msg
 
 -- UPDATE
 
@@ -72,6 +75,8 @@ update msg model =
         CloseInfoModal -> ({ model | infoModal = model.infoModal |> InfoModal.setIsOpened False }, Cmd.none)
         ChangeDisplayMode displayMode -> onChangeDisplayMode model displayMode
         OnResize width height -> onResize model width height
+        PlaySynchronized -> (model, runSynchronizedAction (synchronizedActionEncoder ({ action = Play, streams = model.streams })))
+        PauseSynchronized -> (model, runSynchronizedAction (synchronizedActionEncoder ({ action = Pause, streams = model.streams })))
 
 calcRatio: Int -> Int -> Float
 calcRatio width height =
@@ -221,6 +226,11 @@ toolbarBlock model =
                 span (toolbarIconStyle ++ [ title "add new stream to the list", style "margin-right" "2px", class "material-icons", onClick OpenAddStreamModal ]) [text "add"]
                 , span (toolbarIconStyle ++ [ title "switch to focused view", style "margin-right" "2px", class "material-icons", onClick (ChangeDisplayMode Focused) ]) [text "view_sidebar"]
                 , span (toolbarIconStyle ++ [ title "switch to balanced view", style "margin-right" "2px", class "material-icons", onClick (ChangeDisplayMode Balanced) ]) [text "view_module"]
+            ]
+        , div toolbarLeftBlockStyle
+            [
+                span (toolbarIconStyle ++ [ title "play all videos", class "material-icons", onClick PlaySynchronized ]) [text "play_arrow"]
+                , span (toolbarIconStyle ++ [ title "play all videos", class "material-icons", onClick PauseSynchronized ]) [text "pause"]
             ]
         , div flexRow
             [

@@ -9,27 +9,15 @@
         <meta name="language" content="English">
         <meta name="google-site-verification" content="l3wz3_HsLPq3ZaZpm_1EXVrYjP9neb3MXjwdh00Ug-0" />
         <script src="./main.js"></script>
+        <script>
+            const version = 'DEV';
+        </script>
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
               rel="stylesheet">
     </head>
     <body style="margin: 0; height: 100%;">
         <div id="multitube"></div>
-        <script>
-            var version = 'DEV';
-            var storedState = localStorage.getItem('sources');
-            var startingState = storedState ? JSON.parse(storedState) : null;
-            var app = Elm.Main.init({
-                flags: {
-                    windowWidth: window.innerWidth,
-                    windowHeight: window.innerHeight,
-                    startingSources: startingState,
-                    version: version
-                },
-                node: document.getElementById('multitube')
-            });
-             app.ports.setSources.subscribe(function(state) {
-                localStorage.setItem('sources', state);
-            });
-        </script>
+        <script src="https://www.youtube.com/iframe_api"></script>
+        <script src="./ports.js"></script>
     </body>
 </html>
